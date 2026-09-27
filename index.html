@@ -114,7 +114,7 @@
 </header>
 
 <nav class="toc">
-  <a href="#first">First release</a><a href="#shape">The shape</a><a href="#signin">Sign-in</a><a href="#messages">Messages</a><a href="#api">API over time</a><a href="#who">Who builds what</a><a href="#road">Roadmap</a><a href="#decided">Decided</a><a href="#you">For you</a>
+  <a href="#first">First release</a><a href="#shape">The shape</a><a href="#signin">Sign-in</a><a href="#messages">Messages</a><a href="#api">API over time</a><a href="#who">Who builds what</a><a href="#road">Roadmap</a><a href="#decided">Agreements</a><a href="#you">Your choices</a>
 </nav>
 
 <section id="first">
@@ -139,13 +139,13 @@
         <li>H10 and other Bluetooth devices</li>
         <li>Account and resident administration (link out to the website)</li>
         <li>Full feature parity with the web</li>
-        <li>Token-by-token streaming &mdash; not coming back (see Messages)</li>
+        <li>Token-by-token streaming &mdash; not part of this plan (see Messages)</li>
       </ul>
     </div>
   </div>
   <div class="box gold" style="margin-top:12px">
     <h3>How we'll know it works — on both real phones</h3>
-    <p class="small">Sign in without credentials &rarr; open and start conversations &rarr; send text and a photo &rarr; invite a resident, see progress, then the reply &rarr; kill the signal mid-send and confirm <b>no duplicate</b> &rarr; with the chat open, have someone post, edit and delete a message elsewhere: <b>all three appear without refreshing</b> &rarr; suspend and resume, expire the login, revoke the device: each recovers or asks cleanly to sign in, and never shows another account's data.</p>
+    <p class="small">Sign in without copying API keys &rarr; open and start conversations &rarr; send text and a photo &rarr; invite a resident, see progress, then the reply &rarr; kill the signal mid-send and confirm <b>no duplicate</b> &rarr; with the chat open, have someone post, edit and delete a message elsewhere: <b>all three appear without refreshing</b> &rarr; suspend and resume, expire the login, revoke the device: each recovers or asks cleanly to sign in, and never shows another account's data.</p>
   </div>
 </section>
 
@@ -173,11 +173,11 @@
   </div>
   <div class="legend"><span><i style="border-color:var(--coral);background:var(--coral-soft)"></i>new</span><span><i style="border-color:var(--gold);background:var(--gold-soft)"></i>added to existing</span><span><i style="border-color:var(--teal);background:var(--teal-soft)"></i>exists today</span></div>
   <details><summary>Why native, not React Native or Hotwire Native</summary>
-    <p class="small">You asked for a proper native Souls.house on both phones. Swift/SwiftUI and Kotlin/Compose are each platform's own first-choice toolkit, and the future Bluetooth work (Core Bluetooth, Android BLE, Polar's SDK) is native either way. Hotwire Native was the credible shortcut: web screens inside native navigation. It's quicker, but it isn't the thing you described. Mira and I both drifted toward smaller versions of your idea twice during the thread; this plan is back at your size.</p>
+    <p class="small">You asked for a proper native Souls.house on both phones. Swift/SwiftUI and Kotlin/Compose are each platform's own first-choice toolkit, and the future Bluetooth work (Core Bluetooth, Android BLE, Polar's SDK) is native either way. React Native was the main alternative (faster releases). Hotwire Native is out, as you pointed out, because the web app is Svelte, not Hotwire. Mira and I both drifted toward smaller versions of your idea during the thread; this plan is back at your size.</p>
     <p class="small">Builds happen on your Mac (Xcode is Mac-only). Code can be written anywhere; Xcode's command-line tools mean the Mac mostly builds and signs rather than being driven by hand.</p>
   </details>
   <details><summary>Why the web's page data isn't reused as the API</summary>
-    <p class="small">Inertia page props are shaped for one screen and can carry web-only or sensitive fields. The phone gets an explicit, small contract. Both the web controllers and the API call the <i>same</i> underlying operations, so permissions and behaviour can't drift apart, but the shapes on the wire are chosen on purpose.</p>
+    <p class="small">Inertia page props are shaped for one screen and can carry web-only or sensitive fields. The phone gets an explicit, small contract. Both the web controllers and the API call the <i>same</i> underlying operations, so shared operations and shared tests keep them from drifting apart (it reduces drift; it doesn't prove it), but the shapes on the wire are chosen on purpose.</p>
   </details>
 </section>
 
@@ -186,9 +186,9 @@
   <p>Standard mobile OAuth (authorization code + PKCE) using the <b>Doorkeeper</b> gem. It feels like "Sign in with…" on any app:</p>
   <ol class="steps">
     <li><b>Tap "Sign in".</b> The phone opens the system browser sheet at souls.house.</li>
-    <li><b>You're usually already logged in</b> there, so you just approve "Souls.house app on Paulina's iPhone".</li>
+    <li><b>Sign in there if needed</b>, then approve "Souls.house app on Paulina's iPhone".</li>
     <li><b>The browser hands back a one-time code</b>, never a key, and the app swaps it for tokens.</li>
-    <li><b>Short-lived access token + rotating refresh token</b>, stored in the phone's keychain / keystore.</li>
+    <li><b>Short-lived access token + rotating refresh token with reuse detection</b>, stored in the phone's keychain / keystore. Doorkeeper supports this; our configuration still has to be validated against that requirement, not assumed from installing it.</li>
     <li><b>Each phone is its own named session</b>, visible and revocable from the website.</li>
   </ol>
   <details><summary>Why not reuse the existing key-approval flow</summary>
@@ -199,7 +199,7 @@
 
 <section id="messages">
   <h2><span class="n">04</span> How messages move</h2>
-  <p>Residents already post several short messages as they work, and the web groups one wake's messages into a single progress bubble. The phone does the same thing. Every message arrives <b>complete and never changes after it's read</b>; any "typing" effect is animation the phone draws.</p>
+  <p>Replies arrive as <b>complete messages, not token streams</b>. While a resident works, the apps show server-reported progress, kept visibly separate from posted messages: progress is not a partial reply. Messages can still be edited or deleted, and the apps reconcile those changes. Any "typing" effect is animation the phone draws.</p>
   <div class="phone" aria-label="Example conversation">
     <div class="bubble me">Can you look at last night's sleep data?<span class="st">✓ sent</span></div>
     <div class="bubble them progress"><b>Mira is working…</b><br><span class="small">Reading the Oura export · Comparing with last week</span></div>
@@ -214,7 +214,7 @@
     <div class="box"><h3>Coming back</h3><p class="small">After sleep or lost signal, the phone refetches and reconciles, including edits and deletions to older messages. Offline is shown honestly as offline.</p></div>
   </div>
   <details><summary>The one subtle backend change</summary>
-    <p class="small">Today a subscriber to a chat is told about messages that existed when it subscribed. The web quietly re-subscribes whenever its list changes, so it never misses anything; a phone subscribing once would miss edits to messages created after it opened the chat. Fix: one chat-level "changed" event covering create, edit and delete. It's a nudge, not data, so the phone always reads authoritative state and there's nothing to get out of sync. Mira also asked us to spell out the subscribe-then-fetch handshake so a nudge landing mid-fetch isn't lost (a "dirty" flag and a follow-up fetch is enough).</p>
+    <p class="small">Today a subscriber to a chat is told about messages that existed when it subscribed. The web re-subscribes whenever its message list changes, which covers most of this; a phone subscribing once would miss edits to messages created after it opened the chat. Fix: chat-level invalidations covering creation, edits and deletions. They're nudges, not data: the phone refetches authoritative state, and reconciles again after reconnecting or returning to the foreground. The subscribe-then-fetch handshake also has to be pinned down so a nudge landing mid-fetch isn't lost. A "dirty" flag plus a follow-up fetch is one candidate; the backend and client specs must define and test it.</p>
     <p class="small">Streaming: you'd already switched token streaming off, and nothing on master calls it any more. My review got this wrong at first. The plan is complete messages plus progress bubbles, with no chunk machinery at all.</p>
   </details>
 </section>
@@ -232,7 +232,7 @@
     <div class="arrow"></div>
     <div class="tier"><div class="node exist"><b>One shared operation</b></div></div>
   </div>
-  <p class="small"><b>Minimum-build floor:</b> each app sends its build number; below the floor the server answers "please update" with a store link. A floor is only raised once the new build is actually in the stores, so nobody gets stranded by review delays. At most two major contracts supported at once, with a published retirement window.</p>
+  <p class="small"><b>Minimum-build floor:</b> each app sends its build number; below the floor the server answers "please update" with a store link. A floor is only raised once the new build is actually available to the affected users on that platform (staged rollouts, regions and OS eligibility all count), so nobody gets stranded. Proposed target, not yet policy: at most two major contracts supported at once, with a published retirement window.</p>
   <details><summary>How it's tested</summary>
     <p class="small">An OpenAPI description of just the mobile-facing part; shared JSON fixtures that both apps' test suites decode; and compatibility tests that run the <i>oldest</i> supported contract against the current server, because schema checks alone don't catch a change in permissions or ordering. Client version telemetry tells us who's still on old builds.</p>
   </details>
@@ -258,17 +258,17 @@
     <div class="ms"><h3>3 · Make it hold up</h3><p class="small">Attachments, history paging, inviting residents, progress bubbles, interruption recovery. Run the acceptance test on real phones.</p></div>
     <div class="ms"><h3>4 · Test release</h3><p class="small">TestFlight and a Play internal track for Paulina and the house. Needs the developer accounts.</p></div>
     <div class="ms"><h3>5 · Push notifications</h3><p class="small">Residents often reply minutes later, so a chat app without notifications is only half useful. First thing after the proof of concept.</p></div>
-    <div class="ms later"><h3>6 · Bluetooth: H10 first</h3><p class="small">Capture &rarr; durable local queue &rarr; authenticated upload &rarr; explicitly permitted agent access. The reason the idea started.</p></div>
-    <div class="ms later"><h3>7 · Towards parity</h3><p class="small">Move web-only screens across as they earn it.</p></div>
+    <div class="ms later"><h3>6 · Towards full parity</h3><p class="small">Expand toward the agreed full-parity goal, prioritising the remaining screens with you.</p></div>
+    <div class="ms later"><h3>7 · Bluetooth: H10 first</h3><p class="small">Capture &rarr; durable local queue &rarr; authenticated upload &rarr; explicitly permitted agent access. The reason the idea started. <b>Whether this comes before or after parity is your call</b> (see Choices).</p></div>
   </div>
 </section>
 
 <section id="decided">
-  <h2><span class="n">08</span> Decided, and who changed their mind</h2>
+  <h2><span class="n">08</span> Current agreements and proposals</h2>
   <table>
     <tr><th>Question</th><th>Decision</th></tr>
-    <tr><td>Toolkits</td><td>Swift/SwiftUI and Kotlin/Compose. Both agreed from the start.</td></tr>
-    <tr><td>Sign-in</td><td>Doorkeeper, code + PKCE. <span class="muted">Lume moved to Mira's view.</span></td></tr>
+    <tr><td>Toolkits</td><td>Swift/SwiftUI and Kotlin/Compose, following your preference after we had both leaned toward React Native.</td></tr>
+    <tr><td>Sign-in</td><td>Doorkeeper, code + PKCE: our agreed recommendation; configuration still to validate. <span class="muted">Lume moved to Mira's view.</span></td></tr>
     <tr><td>API versioning</td><td>Stay on v1, additive only, adapters if v2 is ever needed. <span class="muted">Lume dropped a date-versioning gem.</span></td></tr>
     <tr><td>Build floor</td><td>Yes, per platform, raised only once the new build is live. <span class="muted">Lume proposed, Mira added the safeguard.</span></td></tr>
     <tr><td>Streaming</td><td>None. Complete messages plus progress bubbles. <span class="muted">Your call; confirmed in code.</span></td></tr>
@@ -279,16 +279,16 @@
 </section>
 
 <section id="you">
-  <h2><span class="n">09</span> Where your judgement matters most</h2>
-  <p class="small muted">The places where thirty years of shipping software beats our reading.</p>
+  <h2><span class="n">09</span> Choices for Daniel</h2>
   <div class="q"><b>Is the first release the right size?</b> Chat only, with no push notifications and no H10. Is that a real product for Paulina, or too thin to learn from?</div>
+  <div class="q"><b>H10 before or after parity?</b> The roadmap puts broader parity first and Bluetooth after. If the H10 is what you want in hand soonest, that order flips.</div>
   <div class="q"><b>Two native codebases from day one.</b> We're building the same slice twice, in parallel. Does that match your experience of what keeps two apps from drifting apart, or would you build one first?</div>
   <div class="q"><b>Doorkeeper.</b> It adds a real dependency and OAuth tables to the Rails app. Fine by you, or have you been bitten by it?</div>
   <div class="q"><b>Who's in the first test group</b>, and which phones and OS versions do we have to support? That sets the minimum iOS / Android versions.</div>
   <div class="q"><b>Developer accounts.</b> Personal or company (Swombat Ltd) Apple and Google accounts? It affects the name shown in the stores and the Play testing rules.</div>
 </section>
 
-<footer>Written by Lume, reviewed with Mira · 27 September 2026 · a draft, not a commitment</footer>
+<footer>Written by Lume, reviewed and corrected by Mira · 27 September 2026 · a draft, not a commitment</footer>
 </main>
 </body>
 </html>

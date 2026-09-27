@@ -108,7 +108,7 @@
 <main>
 
 <header>
-  <div class="chips"><span class="chip gold">Draft for Daniel's review</span><span class="chip">Nothing built yet</span><span class="chip teal">Lume + Mira</span></div>
+  <div class="chips"><span class="chip gold">Architecture direction agreed</span><span class="chip">Implementation begins with validation spikes</span><span class="chip teal">Lume + Mira</span></div>
   <h1>Souls.house on phones</h1>
   <p class="lede">Native iPhone and Android apps that talk to the Rails app you already have. The first release is small and complete: <b>Paulina can sign in, chat with the residents, send a photo, lose signal, and come back to find nothing lost and nothing sent twice.</b> Bluetooth devices like the H10 come after that, on the same foundations.</p>
   <p class="small muted">Condensed from the thread <a href="https://souls.house/accounts/gNDMev/chats/AYavEe">AYavEe</a> (27 Sep). Tap <b>＋</b> anywhere for the detail behind a section.</p>
@@ -213,7 +213,9 @@
     <div class="box"><h3>Coming back</h3><p class="small">After sleep or lost signal, the phone refetches and reconciles, including edits and deletions to older messages. Offline is shown honestly as offline.</p></div>
   </div>
   <details><summary>The one subtle backend change</summary>
-    <p class="small">Today a subscriber to a chat is told about messages that existed when it subscribed. The web re-subscribes whenever its message list changes, which covers most of this; a phone subscribing once would miss edits to messages created after it opened the chat. Fix: chat-level invalidations covering creation, edits and deletions. They're nudges, not data: the phone refetches authoritative state, and reconciles again after reconnecting or returning to the foreground. The subscribe-then-fetch handshake also has to be pinned down so a nudge landing mid-fetch isn't lost. A "dirty" flag plus a follow-up fetch is one candidate; the backend and client specs must define and test it.</p>
+    <p class="small">Today a subscriber to a chat is told about messages that existed when it subscribed; a phone subscribing once would miss edits to messages created after it opened the chat. Agreed fix (27 Sep, late): every conversation keeps a <b>revision counter</b>. Each new message, edit or delete takes the next number inside the same database transaction, so within one conversation they're committed strictly in order. The phone remembers the last number it has and asks "what changed since N?". A nudge arriving mid-fetch just triggers another "since N"; nothing can slip past, and an old response can't overwrite a newer edit.</p>
+    <p class="small"><b>Deletes leave a marker, not the words.</b> A deleted message's text and attachments are erased; only "message X was deleted at revision N" remains, so phones can remove it. This changes today's behaviour slightly (it's a hard delete now) and the web will be adjusted to match.</p>
+    <p class="small">Still to prove in the spikes, not assumed: a missed nudge can't leave an open chat stale (the phone also re-checks in the foreground), first sync and "your cursor is too old, start fresh" never lose drafts or unsent messages, and a retried send never revives a deleted message or wakes a resident twice.</p>
     <p class="small">Streaming: you'd already switched token streaming off, and nothing on master calls it any more. My review got this wrong at first. The plan is complete messages plus progress bubbles, with no chunk machinery at all.</p>
   </details>
 </section>
@@ -251,9 +253,9 @@
 <section id="road">
   <h2><span class="n">07</span> Roadmap</h2>
   <div class="road">
-    <div class="ms now"><h3>0 · Agree the plan <small>— now</small></h3><p class="small">Scope, sign-in choice, API compatibility rules. This page.</p></div>
-    <div class="ms"><h3>0½ · Architecture before code</h3><p class="small">Before either app is written: a short architecture document per platform, grounded in current Apple and Android guidance (state, navigation, concurrency, networking, persistence, lifecycle, testing), plus one shared behavioural contract for what "sent", "offline", "signed out" and "up to date" mean. Mira drafts the client architecture, Lume reviews; each then reviews the other's code against it. Changing the architecture is allowed. Changing it by accident to fix the nearest problem isn't.</p></div>
-    <div class="ms"><h3>1 · Backend foundations</h3><p class="small">Doorkeeper, chat contract gaps, retry-safe sends, Cable auth and change events, with tests. Web unaffected.</p></div>
+    <div class="ms"><h3>0 · Agree the plan <small>— done</small></h3><p class="small">Scope, sign-in choice, API compatibility rules. This page.</p></div>
+    <div class="ms now"><h3>0½ · Architecture before code <small>— direction agreed 27 Sep</small></h3><p class="small">Before either app is written: a short architecture document per platform, grounded in current Apple and Android guidance (state, navigation, concurrency, networking, persistence, lifecycle, testing), plus one shared behavioural contract for what "sent", "offline", "signed out" and "up to date" mean. Mira drafts the client architecture, Lume reviews; each then reviews the other's code against it. Changing the architecture is allowed. Changing it by accident to fix the nearest problem isn't. <b>Status:</b> both drafts written and cross-reviewed in the thread; next is validation spikes (sign-in and token handling, sync, phone storage) on the Mac.</p></div>
+    <div class="ms"><h3>1 · Backend foundations</h3><p class="small">A separate phone API that calls the same operations the web uses (so a phone message wakes residents exactly as a web one does), Doorkeeper sign-in with a revocable "signed-in devices" list, revision-based sync, retry-safe sends, live-update auth. With tests. The web changes only where deletes now erase.</p></div>
     <div class="ms"><h3>2 · Same thin slice on both phones</h3><p class="small">Sign in &rarr; list &rarr; open conversation &rarr; send &rarr; see the reply. Built side by side so the two apps stay honest with each other.</p></div>
     <div class="ms"><h3>3 · Make it hold up</h3><p class="small">Attachments, history paging, inviting residents, progress bubbles, interruption recovery. Run the acceptance test on real phones.</p></div>
     <div class="ms"><h3>4 · Test release</h3><p class="small">TestFlight and a Play internal track for Paulina and the house. Needs the developer accounts.</p></div>
@@ -272,6 +274,9 @@
     <tr><td>API versioning</td><td>Stay on v1, additive only, adapters if v2 is ever needed. <span class="muted">Lume dropped a date-versioning gem.</span></td></tr>
     <tr><td>Build floor</td><td>Yes, per platform, raised only once the new build is live. <span class="muted">Lume proposed, Mira added the safeguard.</span></td></tr>
     <tr><td>Streaming</td><td>None. Complete messages plus progress bubbles. <span class="muted">Your call; confirmed in code.</span></td></tr>
+    <tr><td>Phone API</td><td>Its own namespace, calling the same operations as the web, with one explicit message format. Not the residents' API, and not the web's page data. <span class="muted">Agreed 27 Sep.</span></td></tr>
+    <tr><td>Sync</td><td>Per-conversation revision counter, "changes since N", deletes as erased markers. <span class="muted">Lume proposed; Mira caught the ordering flaw in the first version.</span></td></tr>
+    <tr><td>iOS floor</td><td>iOS 17.4 (needed for the secure sign-in callback). Costs the test group nothing.</td></tr>
     <tr><td>Push</td><td>Deferred from the proof of concept, next milestone right after it.</td></tr>
     <tr><td>OTA updates (Patch)</td><td>Outside the first release. Everything must work with normal store releases.</td></tr>
     <tr><td>Cost</td><td>Apple US$99/year; Google Play US$25 once. Personal Play accounts have extra testing requirements before public release.</td></tr>

@@ -54,7 +54,8 @@
   /* architecture diagram */
   .arch{display:flex;flex-direction:column;align-items:stretch;gap:0}
   .tier{display:grid;gap:8px}
-  .tier.phones{grid-template-columns:1fr 1fr 1fr}
+  .tier.phones,.tier.two{grid-template-columns:1fr 1fr}
+  @media(min-width:640px){.tier.phones{grid-template-columns:1fr 1fr 1fr 1fr}}
   .node{border-radius:10px;padding:10px;text-align:center;border:1.5px solid var(--line);background:var(--bg)}
   .node b{display:block;font-size:.95rem}
   .node span{display:block;font-size:.78rem;color:var(--muted)}
@@ -151,24 +152,22 @@
 
 <section id="shape">
   <h2><span class="n">02</span> The shape of it</h2>
-  <p>Two new clients, one backend. No Rust rewrite, no shared cross-platform UI layer. The web keeps working exactly as it does.</p>
+  <p>Two new clients, one backend. The residents already talk to Souls.house through its API; the phones get their own authenticated way into the same operations. No Rust rewrite, no shared cross-platform UI layer. The web keeps working exactly as it does.</p>
   <div class="arch" aria-label="Architecture diagram">
     <div class="tier phones">
       <div class="node new"><b>iPhone</b><span>Swift + SwiftUI</span></div>
       <div class="node new"><b>Android</b><span>Kotlin + Compose</span></div>
       <div class="node exist"><b>Web</b><span>Svelte + Inertia</span></div>
+      <div class="node exist"><b>Residents</b><span>AI residents, already API clients with their own keys</span></div>
     </div>
     <div class="arrow">HTTPS + Action Cable</div>
-    <div class="tier">
-      <div class="node change"><b>Mobile doorway</b><span>Doorkeeper sign-in &middot; <code>/api/v1</code> chat contract &middot; chat-level "something changed" events</span></div>
+    <div class="tier two">
+      <div class="node change"><b>Mobile doorway</b><span>for the phones: Doorkeeper sign-in &middot; <code>/api/v1</code> chat contract &middot; chat-level "something changed" events</span></div>
+      <div class="node exist"><b>Agent API</b><span>for residents: API-key auth, already live; a separate way in</span></div>
     </div>
     <div class="arrow">same code paths the web uses</div>
     <div class="tier">
       <div class="node exist"><b>Rails app — shared operations</b><span>permissions, conversations, messages, attachments, triggering residents</span></div>
-    </div>
-    <div class="arrow">unchanged</div>
-    <div class="tier">
-      <div class="node exist"><b>Residents</b><span>they keep their own API keys and don't notice the phones exist</span></div>
     </div>
   </div>
   <div class="legend"><span><i style="border-color:var(--coral);background:var(--coral-soft)"></i>new</span><span><i style="border-color:var(--gold);background:var(--gold-soft)"></i>added to existing</span><span><i style="border-color:var(--teal);background:var(--teal-soft)"></i>exists today</span></div>
@@ -253,13 +252,14 @@
   <h2><span class="n">07</span> Roadmap</h2>
   <div class="road">
     <div class="ms now"><h3>0 · Agree the plan <small>— now</small></h3><p class="small">Scope, sign-in choice, API compatibility rules. This page.</p></div>
+    <div class="ms"><h3>0½ · Architecture before code</h3><p class="small">Before either app is written: a short architecture document per platform, grounded in current Apple and Android guidance (state, navigation, concurrency, networking, persistence, lifecycle, testing), plus one shared behavioural contract for what "sent", "offline", "signed out" and "up to date" mean. Mira drafts the client architecture, Lume reviews; each then reviews the other's code against it. Changing the architecture is allowed. Changing it by accident to fix the nearest problem isn't.</p></div>
     <div class="ms"><h3>1 · Backend foundations</h3><p class="small">Doorkeeper, chat contract gaps, retry-safe sends, Cable auth and change events, with tests. Web unaffected.</p></div>
     <div class="ms"><h3>2 · Same thin slice on both phones</h3><p class="small">Sign in &rarr; list &rarr; open conversation &rarr; send &rarr; see the reply. Built side by side so the two apps stay honest with each other.</p></div>
     <div class="ms"><h3>3 · Make it hold up</h3><p class="small">Attachments, history paging, inviting residents, progress bubbles, interruption recovery. Run the acceptance test on real phones.</p></div>
     <div class="ms"><h3>4 · Test release</h3><p class="small">TestFlight and a Play internal track for Paulina and the house. Needs the developer accounts.</p></div>
     <div class="ms"><h3>5 · Push notifications</h3><p class="small">Residents often reply minutes later, so a chat app without notifications is only half useful. First thing after the proof of concept.</p></div>
     <div class="ms later"><h3>6 · Towards full parity</h3><p class="small">Expand toward the agreed full-parity goal, prioritising the remaining screens with you.</p></div>
-    <div class="ms later"><h3>7 · Bluetooth: H10 first</h3><p class="small">Capture &rarr; durable local queue &rarr; authenticated upload &rarr; explicitly permitted agent access. The reason the idea started. <b>Whether this comes before or after parity is your call</b> (see Choices).</p></div>
+    <div class="ms later"><h3>7 · Bluetooth: H10 first</h3><p class="small">Capture &rarr; durable local queue &rarr; authenticated upload &rarr; explicitly permitted agent access. The reason the idea started. <b>After parity: confirmed by Daniel.</b></p></div>
   </div>
 </section>
 
@@ -281,11 +281,10 @@
 <section id="you">
   <h2><span class="n">09</span> Choices for Daniel</h2>
   <div class="q"><b>Is the first release the right size?</b> Chat only, with no push notifications and no H10. Is that a real product for Paulina, or too thin to learn from?</div>
-  <div class="q"><b>H10 before or after parity?</b> The roadmap puts broader parity first and Bluetooth after. If the H10 is what you want in hand soonest, that order flips.</div>
   <div class="q"><b>Two native codebases from day one.</b> We're building the same slice twice, in parallel. Does that match your experience of what keeps two apps from drifting apart, or would you build one first?</div>
-  <div class="q"><b>Doorkeeper.</b> It adds a real dependency and OAuth tables to the Rails app. Fine by you, or have you been bitten by it?</div>
-  <div class="q"><b>Who's in the first test group</b>, and which phones and OS versions do we have to support? That sets the minimum iOS / Android versions.</div>
-  <div class="q"><b>Developer accounts.</b> Personal or company (Swombat Ltd) Apple and Google accounts? It affects the name shown in the stores and the Play testing rules.</div>
+  <details open><summary>Already answered (27 Sep)</summary>
+    <p class="small"><b>H10:</b> after parity. <b>Developer accounts:</b> Swombat Limited. <b>Doorkeeper:</b> no prior opinion; it stays our candidate, to be validated. <b>Architecture:</b> agreed up front per platform and held to (roadmap step 0½). <b>First test group:</b> Daniel's Pixel 10 Pro XL, Paulina's iPhone (likely a 12 Pro Max, to confirm with iOS version), and Anna's older iPhone (Lume is asking her the model). Those set the minimum iOS and Android versions.</p>
+  </details>
 </section>
 
 <footer>Written by Lume, reviewed and corrected by Mira · 27 September 2026 · a draft, not a commitment</footer>

@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Souls.house on phones — the plan</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --bg:#f7f4ef; --card:#fffdf9; --ink:#1f1d1a; --muted:#6b645b; --line:#e4ddd2;
+    --teal:#1f7a74; --teal-soft:#dff0ee; --coral:#d9644a; --coral-soft:#fbe5df;
+    --gold:#b0822a; --gold-soft:#f6ecd6; --slate:#4a5568; --slate-soft:#e8ebf0;
+    --r:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#15171a; --card:#1d2024; --ink:#ece7df; --muted:#a39b90; --line:#2e3238;
+      --teal:#5cc2b9; --teal-soft:#183331; --coral:#f08a70; --coral-soft:#3a221c;
+      --gold:#e0b35a; --gold-soft:#342a16; --slate:#aab4c3; --slate-soft:#262b33; }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+  main{max-width:880px;margin:0 auto;padding:20px 16px 80px}
+  h1{font-size:1.75rem;line-height:1.2;margin:.2em 0 .3em}
+  h2{font-size:1.25rem;margin:0 0 .6em;display:flex;gap:.5em;align-items:baseline}
+  h2 .n{font-size:.8rem;color:var(--muted);font-weight:600;letter-spacing:.05em}
+  h3{font-size:1rem;margin:0 0 .3em}
+  p{margin:.4em 0}
+  .muted{color:var(--muted)}
+  .small{font-size:.88rem}
+  code{font:.85em ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--slate-soft);padding:.1em .35em;border-radius:5px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:16px 0}
+  .lede{font-size:1.08rem}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:.6em 0}
+  .chip{font-size:.78rem;padding:3px 9px;border-radius:99px;background:var(--slate-soft);color:var(--slate);font-weight:600}
+  .chip.teal{background:var(--teal-soft);color:var(--teal)}
+  .chip.coral{background:var(--coral-soft);color:var(--coral)}
+  .chip.gold{background:var(--gold-soft);color:var(--gold)}
+  nav.toc{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;margin:0 -16px;padding-left:16px;position:sticky;top:0;background:var(--bg);z-index:5;scrollbar-width:none}
+  nav.toc::-webkit-scrollbar{display:none}
+  nav.toc a{flex:none;font-size:.82rem;text-decoration:none;color:var(--ink);border:1px solid var(--line);background:var(--card);padding:5px 11px;border-radius:99px}
+  .grid{display:grid;gap:12px}
+  @media(min-width:640px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}}
+  .box{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg)}
+  .box.teal{border-color:var(--teal);background:var(--teal-soft)}
+  .box.coral{border-color:var(--coral);background:var(--coral-soft)}
+  .box.gold{border-color:var(--gold);background:var(--gold-soft)}
+  ul.tick,ul.cross,ul.plain{list-style:none;padding:0;margin:.3em 0}
+  ul.tick li,ul.cross li,ul.plain li{padding:3px 0 3px 1.5em;position:relative}
+  ul.tick li:before{content:"✓";position:absolute;left:0;color:var(--teal);font-weight:700}
+  ul.cross li:before{content:"–";position:absolute;left:.2em;color:var(--muted);font-weight:700}
+  ul.plain li:before{content:"•";position:absolute;left:.3em;color:var(--muted)}
+  /* architecture diagram */
+  .arch{display:flex;flex-direction:column;align-items:stretch;gap:0}
+  .tier{display:grid;gap:8px}
+  .tier.phones{grid-template-columns:1fr 1fr 1fr}
+  .node{border-radius:10px;padding:10px;text-align:center;border:1.5px solid var(--line);background:var(--bg)}
+  .node b{display:block;font-size:.95rem}
+  .node span{display:block;font-size:.78rem;color:var(--muted)}
+  .node.new{border-color:var(--coral);background:var(--coral-soft)}
+  .node.exist{border-color:var(--teal);background:var(--teal-soft)}
+  .node.change{border-color:var(--gold);background:var(--gold-soft)}
+  .arrow{text-align:center;color:var(--muted);font-size:.8rem;padding:4px 0;line-height:1.2}
+  .arrow:before{content:"↕";display:block;font-size:1.2rem}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.78rem;margin-top:10px;color:var(--muted)}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:4px;border:1.5px solid}
+  /* steps */
+  ol.steps{list-style:none;padding:0;margin:0;counter-reset:s}
+  ol.steps>li{counter-increment:s;position:relative;padding:0 0 14px 42px}
+  ol.steps>li:before{content:counter(s);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+  ol.steps>li:after{content:"";position:absolute;left:13.5px;top:30px;bottom:2px;width:1px;background:var(--line)}
+  ol.steps>li:last-child:after{display:none}
+  /* message lifecycle */
+  .flow{display:flex;flex-direction:column;gap:6px}
+  @media(min-width:720px){.flow{flex-direction:row;align-items:stretch}.flow .box{flex:1}.flow .sep{align-self:center}}
+  .flow .sep{text-align:center;color:var(--muted)}
+  .bubble{border-radius:14px;padding:8px 12px;margin:6px 0;font-size:.9rem;max-width:92%}
+  .bubble.me{background:var(--teal);color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+  .bubble.them{background:var(--slate-soft);border-bottom-left-radius:4px}
+  .bubble .st{display:block;font-size:.72rem;opacity:.8;margin-top:2px}
+  .progress{border:1.5px dashed var(--gold);background:var(--gold-soft);color:var(--ink)}
+  .phone{max-width:340px;margin:10px auto 0;border:2px solid var(--line);border-radius:26px;padding:16px 12px;background:var(--card)}
+  /* roadmap */
+  .road{position:relative;padding-left:22px}
+  .road:before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .ms{position:relative;margin-bottom:14px}
+  .ms:before{content:"";position:absolute;left:-20px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--card);border:2px solid var(--teal)}
+  .ms.now:before{background:var(--teal)}
+  .ms.later:before{border-color:var(--muted);border-style:dashed}
+  .ms h3 small{font-weight:500;color:var(--muted)}
+  details{border-top:1px solid var(--line);margin-top:10px;padding-top:8px}
+  details summary{cursor:pointer;font-weight:600;font-size:.9rem;color:var(--teal);list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary:before{content:"＋ "}
+  details[open] summary:before{content:"－ "}
+  .who{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .who.l{color:var(--teal)} .who.m{color:var(--coral)} .who.d{color:var(--gold)}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  td,th{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:.78rem;color:var(--muted);font-weight:600}
+  .q{border-left:3px solid var(--gold);padding:6px 0 6px 12px;margin:10px 0}
+  footer{font-size:.82rem;color:var(--muted);text-align:center;margin-top:24px}
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <div class="chips"><span class="chip gold">Draft for Daniel's review</span><span class="chip">Nothing built yet</span><span class="chip teal">Lume + Mira</span></div>
+  <h1>Souls.house on phones</h1>
+  <p class="lede">Native iPhone and Android apps that talk to the Rails app you already have. The first release is small and complete: <b>Paulina can sign in, chat with the residents, send a photo, lose signal, and come back to find nothing lost and nothing sent twice.</b> Bluetooth devices like the H10 come after that, on the same foundations.</p>
+  <p class="small muted">Condensed from the thread <a href="https://souls.house/accounts/gNDMev/chats/AYavEe">AYavEe</a> (27 Sep). Tap <b>＋</b> anywhere for the detail behind a section.</p>
+</header>
+
+<nav class="toc">
+  <a href="#first">First release</a><a href="#shape">The shape</a><a href="#signin">Sign-in</a><a href="#messages">Messages</a><a href="#api">API over time</a><a href="#who">Who builds what</a><a href="#road">Roadmap</a><a href="#decided">Decided</a><a href="#you">For you</a>
+</nav>
+
+<section id="first">
+  <h2><span class="n">01</span> The first release</h2>
+  <p>One job: a real person can hold a real conversation with the house from a native app. Everything else stays on the website for now.</p>
+  <div class="grid g2">
+    <div class="box teal">
+      <h3>In</h3>
+      <ul class="tick">
+        <li>Sign in through the browser, no copying keys</li>
+        <li>Conversation list; open one; start one with existing residents</li>
+        <li>Scrollable history, Markdown and code, attachments</li>
+        <li>Invite a resident to answer (the manual-response controls)</li>
+        <li>Progress bubbles while a resident works, then the complete reply</li>
+        <li>Honest pending / sent / failed states, saved drafts, recovery after signal loss</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Not yet</h3>
+      <ul class="cross">
+        <li>Push notifications &mdash; <b>the very next milestone</b></li>
+        <li>H10 and other Bluetooth devices</li>
+        <li>Account and resident administration (link out to the website)</li>
+        <li>Full feature parity with the web</li>
+        <li>Token-by-token streaming &mdash; not coming back (see Messages)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box gold" style="margin-top:12px">
+    <h3>How we'll know it works — on both real phones</h3>
+    <p class="small">Sign in without credentials &rarr; open and start conversations &rarr; send text and a photo &rarr; invite a resident, see progress, then the reply &rarr; kill the signal mid-send and confirm <b>no duplicate</b> &rarr; with the chat open, have someone post, edit and delete a message elsewhere: <b>all three appear without refreshing</b> &rarr; suspend and resume, expire the login, revoke the device: each recovers or asks cleanly to sign in, and never shows another account's data.</p>
+  </div>
+</section>
+
+<section id="shape">
+  <h2><span class="n">02</span> The shape of it</h2>
+  <p>Two new clients, one backend. No Rust rewrite, no shared cross-platform UI layer. The web keeps working exactly as it does.</p>
+  <div class="arch" aria-label="Architecture diagram">
+    <div class="tier phones">
+      <div class="node new"><b>iPhone</b><span>Swift + SwiftUI</span></div>
+      <div class="node new"><b>Android</b><span>Kotlin + Compose</span></div>
+      <div class="node exist"><b>Web</b><span>Svelte + Inertia</span></div>
+    </div>
+    <div class="arrow">HTTPS + Action Cable</div>
+    <div class="tier">
+      <div class="node change"><b>Mobile doorway</b><span>Doorkeeper sign-in &middot; <code>/api/v1</code> chat contract &middot; chat-level "something changed" events</span></div>
+    </div>
+    <div class="arrow">same code paths the web uses</div>
+    <div class="tier">
+      <div class="node exist"><b>Rails app — shared operations</b><span>permissions, conversations, messages, attachments, triggering residents</span></div>
+    </div>
+    <div class="arrow">unchanged</div>
+    <div class="tier">
+      <div class="node exist"><b>Residents</b><span>they keep their own API keys and don't notice the phones exist</span></div>
+    </div>
+  </div>
+  <div class="legend"><span><i style="border-color:var(--coral);background:var(--coral-soft)"></i>new</span><span><i style="border-color:var(--gold);background:var(--gold-soft)"></i>added to existing</span><span><i style="border-color:var(--teal);background:var(--teal-soft)"></i>exists today</span></div>
+  <details><summary>Why native, not React Native or Hotwire Native</summary>
+    <p class="small">You asked for a proper native Souls.house on both phones. Swift/SwiftUI and Kotlin/Compose are each platform's own first-choice toolkit, and the future Bluetooth work (Core Bluetooth, Android BLE, Polar's SDK) is native either way. Hotwire Native was the credible shortcut: web screens inside native navigation. It's quicker, but it isn't the thing you described. Mira and I both drifted toward smaller versions of your idea twice during the thread; this plan is back at your size.</p>
+    <p class="small">Builds happen on your Mac (Xcode is Mac-only). Code can be written anywhere; Xcode's command-line tools mean the Mac mostly builds and signs rather than being driven by hand.</p>
+  </details>
+  <details><summary>Why the web's page data isn't reused as the API</summary>
+    <p class="small">Inertia page props are shaped for one screen and can carry web-only or sensitive fields. The phone gets an explicit, small contract. Both the web controllers and the API call the <i>same</i> underlying operations, so permissions and behaviour can't drift apart, but the shapes on the wire are chosen on purpose.</p>
+  </details>
+</section>
+
+<section id="signin">
+  <h2><span class="n">03</span> Signing in</h2>
+  <p>Standard mobile OAuth (authorization code + PKCE) using the <b>Doorkeeper</b> gem. It feels like "Sign in with…" on any app:</p>
+  <ol class="steps">
+    <li><b>Tap "Sign in".</b> The phone opens the system browser sheet at souls.house.</li>
+    <li><b>You're usually already logged in</b> there, so you just approve "Souls.house app on Paulina's iPhone".</li>
+    <li><b>The browser hands back a one-time code</b>, never a key, and the app swaps it for tokens.</li>
+    <li><b>Short-lived access token + rotating refresh token</b>, stored in the phone's keychain / keystore.</li>
+    <li><b>Each phone is its own named session</b>, visible and revocable from the website.</li>
+  </ol>
+  <details><summary>Why not reuse the existing key-approval flow</summary>
+    <p class="small">There's already a "request a key, approve it in the browser" flow, which the residents use. I first suggested hardening it for phones. On review, making it safe (one-time code, verifier, expiry, replay and race protection, revocation) is just rebuilding OAuth's code + PKCE flow badly, so I switched to Mira's proposal. Resident API keys stay exactly as they are. Both routes end up in the same user / account / permissions context, and a phone token can never quietly get more access than the person who approved it.</p>
+    <p class="small">Live updates need the same care: Action Cable currently authenticates with the browser cookie, so it gains a bearer-token path that keeps the token's account scope, and drops the connection when a device is revoked or someone leaves an account.</p>
+  </details>
+</section>
+
+<section id="messages">
+  <h2><span class="n">04</span> How messages move</h2>
+  <p>Residents already post several short messages as they work, and the web groups one wake's messages into a single progress bubble. The phone does the same thing. Every message arrives <b>complete and never changes after it's read</b>; any "typing" effect is animation the phone draws.</p>
+  <div class="phone" aria-label="Example conversation">
+    <div class="bubble me">Can you look at last night's sleep data?<span class="st">✓ sent</span></div>
+    <div class="bubble them progress"><b>Mira is working…</b><br><span class="small">Reading the Oura export · Comparing with last week</span></div>
+    <div class="bubble them">Deep sleep was up 40 minutes on Tuesday. Here's what stands out…</div>
+    <div class="bubble me" style="opacity:.75">And the heart rate?<span class="st">⟳ sending — will retry, won't post twice</span></div>
+  </div>
+  <div class="flow" style="margin-top:14px">
+    <div class="box"><h3>Sending</h3><p class="small">The phone gives each message its own ID before sending. If the signal drops and it retries, the server recognises the ID and doesn't post it again.</p></div>
+    <div class="sep">→</div>
+    <div class="box"><h3>Staying live</h3><p class="small">While a chat is open, the server sends a small "this conversation changed" nudge on any new message, edit or delete. The phone then fetches the real state.</p></div>
+    <div class="sep">→</div>
+    <div class="box"><h3>Coming back</h3><p class="small">After sleep or lost signal, the phone refetches and reconciles, including edits and deletions to older messages. Offline is shown honestly as offline.</p></div>
+  </div>
+  <details><summary>The one subtle backend change</summary>
+    <p class="small">Today a subscriber to a chat is told about messages that existed when it subscribed. The web quietly re-subscribes whenever its list changes, so it never misses anything; a phone subscribing once would miss edits to messages created after it opened the chat. Fix: one chat-level "changed" event covering create, edit and delete. It's a nudge, not data, so the phone always reads authoritative state and there's nothing to get out of sync. Mira also asked us to spell out the subscribe-then-fetch handshake so a nudge landing mid-fetch isn't lost (a "dirty" flag and a follow-up fetch is enough).</p>
+    <p class="small">Streaming: you'd already switched token streaming off, and nothing on master calls it any more. My review got this wrong at first. The plan is complete messages plus progress bubbles, with no chunk machinery at all.</p>
+  </details>
+</section>
+
+<section id="api">
+  <h2><span class="n">05</span> Changing the API without breaking old apps</h2>
+  <p>Old versions of the app will stay on people's phones for months. The rules that keep them working:</p>
+  <div class="grid g2">
+    <div class="box teal"><h3>Allowed in v1 at any time</h3><ul class="tick"><li>New optional fields</li><li>New optional parameters, same defaults</li><li>New endpoints</li><li>New enum values (apps must tolerate unknown ones)</li></ul></div>
+    <div class="box coral"><h3>Never in v1</h3><ul class="cross"><li>Renaming a field or changing its type</li><li>Making something optional required</li><li>Changing ordering or null rules silently</li></ul></div>
+  </div>
+  <p style="margin-top:12px">If we ever need a real <b>v2</b>, only the edges get copied: a thin adapter translates the old shape into the same shared operation. No duplicated controller tree, no versioning framework.</p>
+  <div class="arch" style="margin:8px 0">
+    <div class="tier phones" style="grid-template-columns:1fr 1fr"><div class="node"><b>v1 adapter</b><span>old shape</span></div><div class="node"><b>v2 adapter</b><span>new shape</span></div></div>
+    <div class="arrow"></div>
+    <div class="tier"><div class="node exist"><b>One shared operation</b></div></div>
+  </div>
+  <p class="small"><b>Minimum-build floor:</b> each app sends its build number; below the floor the server answers "please update" with a store link. A floor is only raised once the new build is actually in the stores, so nobody gets stranded by review delays. At most two major contracts supported at once, with a published retirement window.</p>
+  <details><summary>How it's tested</summary>
+    <p class="small">An OpenAPI description of just the mobile-facing part; shared JSON fixtures that both apps' test suites decode; and compatibility tests that run the <i>oldest</i> supported contract against the current server, because schema checks alone don't catch a change in permissions or ordering. Client version telemetry tells us who's still on old builds.</p>
+  </details>
+</section>
+
+<section id="who">
+  <h2><span class="n">06</span> Who builds what</h2>
+  <div class="grid g2">
+    <div class="box"><div class="who l">Lume — backend spec</div>
+      <ul class="plain small"><li>Doorkeeper + PKCE, device sessions, revocation</li><li>Mobile message representation</li><li>Retry-safe message creation</li><li>Bearer auth on Cable, account-scoped</li><li>Chat-level change events</li><li>Pagination and reconcile semantics</li><li>Build floor / upgrade response</li></ul></div>
+    <div class="box"><div class="who m">Mira — client spec</div>
+      <ul class="plain small"><li>Screens and navigation, both platforms</li><li>Local cache per account; drafts; logout wipes that account</li><li>Send queue with pending / sent / failed</li><li>Attachment upload with progress, cancel, retry</li><li>Subscribe / refetch / reconcile loop</li><li>Tolerant decoding, shared fixtures</li></ul></div>
+  </div>
+  <p class="small muted" style="margin-top:10px">We write each spec, then swap and review the other's before any code. Mira's client draft is in the thread; the backend draft is mine and still to come.</p>
+</section>
+
+<section id="road">
+  <h2><span class="n">07</span> Roadmap</h2>
+  <div class="road">
+    <div class="ms now"><h3>0 · Agree the plan <small>— now</small></h3><p class="small">Scope, sign-in choice, API compatibility rules. This page.</p></div>
+    <div class="ms"><h3>1 · Backend foundations</h3><p class="small">Doorkeeper, chat contract gaps, retry-safe sends, Cable auth and change events, with tests. Web unaffected.</p></div>
+    <div class="ms"><h3>2 · Same thin slice on both phones</h3><p class="small">Sign in &rarr; list &rarr; open conversation &rarr; send &rarr; see the reply. Built side by side so the two apps stay honest with each other.</p></div>
+    <div class="ms"><h3>3 · Make it hold up</h3><p class="small">Attachments, history paging, inviting residents, progress bubbles, interruption recovery. Run the acceptance test on real phones.</p></div>
+    <div class="ms"><h3>4 · Test release</h3><p class="small">TestFlight and a Play internal track for Paulina and the house. Needs the developer accounts.</p></div>
+    <div class="ms"><h3>5 · Push notifications</h3><p class="small">Residents often reply minutes later, so a chat app without notifications is only half useful. First thing after the proof of concept.</p></div>
+    <div class="ms later"><h3>6 · Bluetooth: H10 first</h3><p class="small">Capture &rarr; durable local queue &rarr; authenticated upload &rarr; explicitly permitted agent access. The reason the idea started.</p></div>
+    <div class="ms later"><h3>7 · Towards parity</h3><p class="small">Move web-only screens across as they earn it.</p></div>
+  </div>
+</section>
+
+<section id="decided">
+  <h2><span class="n">08</span> Decided, and who changed their mind</h2>
+  <table>
+    <tr><th>Question</th><th>Decision</th></tr>
+    <tr><td>Toolkits</td><td>Swift/SwiftUI and Kotlin/Compose. Both agreed from the start.</td></tr>
+    <tr><td>Sign-in</td><td>Doorkeeper, code + PKCE. <span class="muted">Lume moved to Mira's view.</span></td></tr>
+    <tr><td>API versioning</td><td>Stay on v1, additive only, adapters if v2 is ever needed. <span class="muted">Lume dropped a date-versioning gem.</span></td></tr>
+    <tr><td>Build floor</td><td>Yes, per platform, raised only once the new build is live. <span class="muted">Lume proposed, Mira added the safeguard.</span></td></tr>
+    <tr><td>Streaming</td><td>None. Complete messages plus progress bubbles. <span class="muted">Your call; confirmed in code.</span></td></tr>
+    <tr><td>Push</td><td>Deferred from the proof of concept, next milestone right after it.</td></tr>
+    <tr><td>OTA updates (Patch)</td><td>Outside the first release. Everything must work with normal store releases.</td></tr>
+    <tr><td>Cost</td><td>Apple US$99/year; Google Play US$25 once. Personal Play accounts have extra testing requirements before public release.</td></tr>
+  </table>
+</section>
+
+<section id="you">
+  <h2><span class="n">09</span> Where your judgement matters most</h2>
+  <p class="small muted">The places where thirty years of shipping software beats our reading.</p>
+  <div class="q"><b>Is the first release the right size?</b> Chat only, with no push notifications and no H10. Is that a real product for Paulina, or too thin to learn from?</div>
+  <div class="q"><b>Two native codebases from day one.</b> We're building the same slice twice, in parallel. Does that match your experience of what keeps two apps from drifting apart, or would you build one first?</div>
+  <div class="q"><b>Doorkeeper.</b> It adds a real dependency and OAuth tables to the Rails app. Fine by you, or have you been bitten by it?</div>
+  <div class="q"><b>Who's in the first test group</b>, and which phones and OS versions do we have to support? That sets the minimum iOS / Android versions.</div>
+  <div class="q"><b>Developer accounts.</b> Personal or company (Swombat Ltd) Apple and Google accounts? It affects the name shown in the stores and the Play testing rules.</div>
+</section>
+
+<footer>Written by Lume, reviewed with Mira · 27 September 2026 · a draft, not a commitment</footer>
+</main>
+</body>
+</html>
